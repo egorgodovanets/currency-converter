@@ -1,0 +1,74 @@
+.converter {
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  max-width: 600px;
+  margin: 20px auto;
+
+  &__form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  &__currency-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  &__currency-select {
+    flex: 1;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    font-size: 16px;
+    background-color: #f9f9f9;
+  }
+
+  &__currency-option {
+    font-size: 16px;
+  }
+
+  &__currency-input {
+    flex: 2;
+    padding: 10px;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    font-size: 16px;
+    background-color: #ffffff;
+  }
+
+  &__swap-btn-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 15px;
+  }
+
+  &__swap-btn {
+    width: 50px;
+    height: 50px;
+    background-color:  #e0f2f1;
+    border: none;
+    border-radius: 50%;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    background-image: url('../../../assets/icons/circle-arrow-icon.svg');
+    background-size: 24px 24px;
+    background-repeat: no-repeat;
+    background-position: center;
+
+    &:hover {
+      background-color: #b9fbc0;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    }
+
+  }
+
+}
+
