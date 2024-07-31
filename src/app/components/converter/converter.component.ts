@@ -11,8 +11,8 @@ export class ConverterComponent implements OnChanges {
   @Input() inputCurrencyData!: ExchangeRate[];
   converterForm!: FormGroup;
   convertData!: ExchangeRate[];
-  firstCurrencyControl!: AbstractControl<string | null>;
-  secondCurrencyControl!: AbstractControl<string | null>;
+  firstCurrencyControl!: AbstractControl<string>;
+  secondCurrencyControl!: AbstractControl<string>;
   firstAmountControl!: AbstractControl<number | null>;
   secondAmountControl!: AbstractControl<number | null>;
 
@@ -71,33 +71,30 @@ export class ConverterComponent implements OnChanges {
 
     if (firstAmount !== null) {
       this.convertFromFirstToSecond(firstAmount);
-    } else if (secondAmount !== null) {
+      return;
+    }
+
+    if (secondAmount !== null) {
       this.convertFromSecondToFirst(secondAmount);
     }
   }
 
-  convertFromFirstToSecond(value: number): void {
-    const firstCurrency = this.firstCurrencyControl.value;
-    const secondCurrency = this.secondCurrencyControl.value;
-    const firstRate = this.convertData.find(currency => currency.cc === firstCurrency)?.rate || 1;
-    const secondRate = this.convertData.find(currency => currency.cc === secondCurrency)?.rate || 1;
+  convertFromFirstToSecond(amount: number): void {
+    const firstRate = this.getRate(this.firstCurrencyControl.value);
+    const secondRate = this.getRate(this.secondCurrencyControl.value);
 
-    let convertedValue = (value * firstRate) / secondRate;
-    convertedValue = Number(convertedValue.toFixed(2));
+    const convertedAmount = ConverterComponent.convertAmount(amount, firstRate, secondRate);
 
-    this.secondAmountControl.setValue(convertedValue, { emitEvent: false });
+    this.secondAmountControl.setValue(convertedAmount, { emitEvent: false });
   }
 
-  convertFromSecondToFirst(value: number): void {
-    const firstCurrency = this.firstCurrencyControl.value;
-    const secondCurrency = this.secondCurrencyControl.value;
-    const firstRate = this.convertData.find(currency => currency.cc === firstCurrency)?.rate || 1;
-    const secondRate = this.convertData.find(currency => currency.cc === secondCurrency)?.rate || 1;
+  convertFromSecondToFirst(amount: number): void {
+    const firstRate = this.getRate(this.firstCurrencyControl.value);
+    const secondRate = this.getRate(this.secondCurrencyControl.value);
 
-    let convertedValue = (value * secondRate) / firstRate;
-    convertedValue = Number(convertedValue.toFixed(2));
+    const convertedAmount = ConverterComponent.convertAmount(amount, secondRate, firstRate);
 
-    this.firstAmountControl.setValue(convertedValue, { emitEvent: false });
+    this.firstAmountControl.setValue(convertedAmount, { emitEvent: false });
   }
 
   swapCurrencies(): void {
@@ -112,5 +109,14 @@ export class ConverterComponent implements OnChanges {
     });
 
     this.recalculateValues();
+  }
+
+  getRate(currency: string) {
+    return this.convertData.find(currencyData => currencyData.cc === currency)?.rate || 1;
+  }
+
+  static convertAmount(currentAmount: number, currentRate: number, otherRate: number) {
+    const convertedValue = (currentAmount * currentRate) / otherRate;
+    return Number(convertedValue.toFixed(4));
   }
 }

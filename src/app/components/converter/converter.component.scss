@@ -41,8 +41,9 @@
 
   &__swap-btn-container {
     display: flex;
-    justify-content: center;
     margin-top: 15px;
+    justify-content: flex-start;
+    margin-left: 12%;
   }
 
   &__swap-btn {
