@@ -21,7 +21,7 @@ export class ConverterComponent implements OnChanges {
   ngOnChanges(): void {
     this.convertData = [...this.inputCurrencyData, { cc: 'UAH', rate: 1 }];
     this.buildForm();
-    this.setupValueChanges();
+    this.setupAmountChanges();
     this.setupCurrencyChanges();
   }
 
@@ -38,10 +38,10 @@ export class ConverterComponent implements OnChanges {
     this.firstAmountControl = this.converterForm.get('firstAmount')!;
     this.secondAmountControl = this.converterForm.get('secondAmount')!;
 
-    this.recalculateValues();
+    this.recalculateAmounts();
   }
 
-  setupValueChanges(): void {
+  setupAmountChanges(): void {
     this.firstAmountControl.valueChanges.subscribe(value => {
       if (value !== null) {
         this.convertFromFirstToSecond(value);
@@ -57,15 +57,15 @@ export class ConverterComponent implements OnChanges {
 
   setupCurrencyChanges(): void {
     this.firstCurrencyControl.valueChanges.subscribe(() => {
-      this.recalculateValues();
+      this.recalculateAmounts();
     });
 
     this.secondCurrencyControl.valueChanges.subscribe(() => {
-      this.recalculateValues();
+      this.recalculateAmounts();
     });
   }
 
-  recalculateValues(): void {
+  recalculateAmounts(): void {
     const firstAmount = this.firstAmountControl.value;
     const secondAmount = this.secondAmountControl.value;
 
@@ -108,7 +108,7 @@ export class ConverterComponent implements OnChanges {
       emitEvent: false,
     });
 
-    this.recalculateValues();
+    this.recalculateAmounts();
   }
 
   getRate(currency: string) {
@@ -116,7 +116,7 @@ export class ConverterComponent implements OnChanges {
   }
 
   static convertAmount(currentAmount: number, currentRate: number, otherRate: number) {
-    const convertedValue = (currentAmount * currentRate) / otherRate;
-    return Number(convertedValue.toFixed(4));
+    const convertedAmount = (currentAmount * currentRate) / otherRate;
+    return Number(convertedAmount.toFixed(4));
   }
 }

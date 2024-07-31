@@ -6,7 +6,7 @@ import { currencyToConvert } from './constants/constants.const';
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss']
+  styleUrls: ['./app.component.scss'],
 })
 export class AppComponent implements OnInit {
   currencyData: ExchangeRate[] = [];
@@ -19,7 +19,7 @@ export class AppComponent implements OnInit {
 
   getExchangeRates() {
     this.currencyService.getExchangeRates().subscribe(data => {
-      this.currencyData = data.filter((currency: any) => currencyToConvert.includes(currency.cc));
+      this.currencyData = data.filter(currency => currencyToConvert.includes(currency.cc));
     });
   }
 }
