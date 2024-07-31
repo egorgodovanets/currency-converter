@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CurrencyService } from 'src/app/services/currency.service';
 import { ExchangeRate } from './services/interface/exchangeRates.interface';
+import { currencyToConvert } from './constants/constants.const';
 
 @Component({
   selector: 'app-root',
@@ -18,7 +19,7 @@ export class AppComponent implements OnInit {
 
   getExchangeRates() {
     this.currencyService.getExchangeRates().subscribe(data => {
-      this.currencyData = data.filter((currency: any) => ['USD', 'EUR', 'CHF', 'PLN'].includes(currency.cc));
+      this.currencyData = data.filter((currency: any) => currencyToConvert.includes(currency.cc));
     });
   }
 }

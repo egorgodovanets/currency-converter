@@ -8,59 +8,48 @@ import { ExchangeRate } from 'src/app/services/interface/exchangeRates.interface
   styleUrls: ['./converter.component.scss'],
 })
 export class ConverterComponent implements OnChanges {
-  @Input() currencyData!: ExchangeRate[];
+  @Input() inputCurrencyData!: ExchangeRate[];
   converterForm!: FormGroup;
   convertData!: ExchangeRate[];
-  firstCurrencyControl!: AbstractControl;
-  secondCurrencyControl!: AbstractControl;
+  firstCurrencyControl!: AbstractControl<string | null>;
+  secondCurrencyControl!: AbstractControl<string | null>;
+  firstAmountControl!: AbstractControl<number | null>;
+  secondAmountControl!: AbstractControl<number | null>;
 
   constructor(private fb: FormBuilder) {}
 
   ngOnChanges(): void {
-    this.convertData = [...this.currencyData];
-    this.convertData.push({ cc: 'UAH', rate: 1 });
+    this.convertData = [...this.inputCurrencyData, { cc: 'UAH', rate: 1 }];
     this.buildForm();
     this.setupValueChanges();
     this.setupCurrencyChanges();
-    this.firstCurrencyControl.valueChanges.subscribe((value) => {
-      if (value === null) {
-        this.converterForm.patchValue({
-          firstCurrency: this.convertData[0]?.cc,
-        });
-      }
-    });
-    this.secondCurrencyControl.valueChanges.subscribe((value) => {
-      if (value === null) {
-        this.converterForm.patchValue({
-          secondCurrency: this.convertData[1]?.cc,
-        });
-      }
-    });
   }
 
   buildForm(): void {
     this.converterForm = this.fb.group({
       firstCurrency: this.convertData[0]?.cc,
       secondCurrency: this.convertData[1]?.cc,
-      firstValue: null,
-      secondValue: null,
+      firstAmount: null,
+      secondAmount: null,
     });
 
     this.firstCurrencyControl = this.converterForm.get('firstCurrency')!;
     this.secondCurrencyControl = this.converterForm.get('secondCurrency')!;
+    this.firstAmountControl = this.converterForm.get('firstAmount')!;
+    this.secondAmountControl = this.converterForm.get('secondAmount')!;
 
     this.recalculateValues();
   }
 
   setupValueChanges(): void {
-    this.converterForm.get('firstValue')!.valueChanges.subscribe((value) => {
-      if (value !== null && value !== '') {
+    this.firstAmountControl.valueChanges.subscribe(value => {
+      if (value !== null) {
         this.convertFromFirstToSecond(value);
       }
     });
 
-    this.converterForm.get('secondValue')!.valueChanges.subscribe((value) => {
-      if (value !== null && value !== '') {
+    this.secondAmountControl.valueChanges.subscribe(value => {
+      if (value !== null) {
         this.convertFromSecondToFirst(value);
       }
     });
@@ -77,50 +66,38 @@ export class ConverterComponent implements OnChanges {
   }
 
   recalculateValues(): void {
-    const firstValue = this.converterForm.get('firstValue')!.value;
-    const secondValue = this.converterForm.get('secondValue')!.value;
+    const firstAmount = this.firstAmountControl.value;
+    const secondAmount = this.secondAmountControl.value;
 
-    if (firstValue !== null && firstValue !== '') {
-      this.convertFromFirstToSecond(firstValue);
-    } else if (secondValue !== null && secondValue !== '') {
-      this.convertFromSecondToFirst(secondValue);
+    if (firstAmount !== null) {
+      this.convertFromFirstToSecond(firstAmount);
+    } else if (secondAmount !== null) {
+      this.convertFromSecondToFirst(secondAmount);
     }
   }
 
   convertFromFirstToSecond(value: number): void {
     const firstCurrency = this.firstCurrencyControl.value;
     const secondCurrency = this.secondCurrencyControl.value;
-    const firstRate =
-      this.convertData.find((currency) => currency.cc === firstCurrency)
-        ?.rate || 1;
-    const secondRate =
-      this.convertData.find((currency) => currency.cc === secondCurrency)
-        ?.rate || 1;
+    const firstRate = this.convertData.find(currency => currency.cc === firstCurrency)?.rate || 1;
+    const secondRate = this.convertData.find(currency => currency.cc === secondCurrency)?.rate || 1;
 
     let convertedValue = (value * firstRate) / secondRate;
     convertedValue = Number(convertedValue.toFixed(2));
 
-    this.converterForm
-      .get('secondValue')!
-      .setValue(convertedValue, { emitEvent: false });
+    this.secondAmountControl.setValue(convertedValue, { emitEvent: false });
   }
 
   convertFromSecondToFirst(value: number): void {
     const firstCurrency = this.firstCurrencyControl.value;
     const secondCurrency = this.secondCurrencyControl.value;
-    const firstRate =
-      this.convertData.find((currency) => currency.cc === firstCurrency)
-        ?.rate || 1;
-    const secondRate =
-      this.convertData.find((currency) => currency.cc === secondCurrency)
-        ?.rate || 1;
+    const firstRate = this.convertData.find(currency => currency.cc === firstCurrency)?.rate || 1;
+    const secondRate = this.convertData.find(currency => currency.cc === secondCurrency)?.rate || 1;
 
     let convertedValue = (value * secondRate) / firstRate;
     convertedValue = Number(convertedValue.toFixed(2));
 
-    this.converterForm
-      .get('firstValue')!
-      .setValue(convertedValue, { emitEvent: false });
+    this.firstAmountControl.setValue(convertedValue, { emitEvent: false });
   }
 
   swapCurrencies(): void {
@@ -135,29 +112,5 @@ export class ConverterComponent implements OnChanges {
     });
 
     this.recalculateValues();
-  }
-
-  filterInput(event: Event, controlName: string): void {
-    const input = event.target as HTMLInputElement;
-    let filteredValue = input.value.replace(/[^0-9.]/g, '');
-
-    const parts = filteredValue.split('.');
-    if (parts.length > 2) {
-      filteredValue = parts[0] + '.' + parts.slice(1).join('');
-    }
-
-    if (this.isValidNumber(filteredValue)) {
-      this.converterForm
-        .get(controlName)!
-        .setValue(filteredValue, { emitEvent: false });
-    }
-
-    this.converterForm
-      .get(controlName)!
-      .setValue(filteredValue, { emitEvent: false });
-  }
-
-  isValidNumber(value: string): boolean {
-    return !isNaN(parseFloat(value)) && isFinite(parseFloat(value));
   }
 }
