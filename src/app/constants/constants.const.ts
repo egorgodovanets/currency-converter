@@ -1,3 +1,5 @@
-export const apiUrl = 'https://bank.gov.ua/NBUStatService/v1/statdirectory/exchange?json';
+export const apiUrl = 'https://v6.exchangerate-api.com/v6/<API_KEY>/latest/<BASE_CURRENCY>';
 
-export const currencyToConvert = ['USD', 'EUR', 'CHF', 'PLN'];
+export const apiKey = '8f9222fc57c94f7a317d799d';
+
+export const currencies = ['UAH', 'USD', 'EUR', 'CHF', 'PLN'];

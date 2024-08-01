@@ -1,6 +1,7 @@
 import { Component, Input, OnChanges } from '@angular/core';
 import { AbstractControl, FormBuilder, FormGroup } from '@angular/forms';
-import { ExchangeRate } from 'src/app/services/interface/exchangeRates.interface';
+import { ExchangeRates } from 'src/app/services/interface/exchangeRates.interface';
+import { currencies } from '../../constants/constants.const';
 
 @Component({
   selector: 'app-converter',
@@ -8,18 +9,17 @@ import { ExchangeRate } from 'src/app/services/interface/exchangeRates.interface
   styleUrls: ['./converter.component.scss'],
 })
 export class ConverterComponent implements OnChanges {
-  @Input() inputCurrencyData!: ExchangeRate[];
+  @Input() inputCurrencyData!: ExchangeRates;
   converterForm!: FormGroup;
-  convertData!: ExchangeRate[];
   firstCurrencyControl!: AbstractControl<string>;
   secondCurrencyControl!: AbstractControl<string>;
   firstAmountControl!: AbstractControl<number | null>;
   secondAmountControl!: AbstractControl<number | null>;
+  currencies: string[] = currencies;
 
-  constructor(private fb: FormBuilder) {}
+  constructor(private fb: FormBuilder) { }
 
   ngOnChanges(): void {
-    this.convertData = [...this.inputCurrencyData, { cc: 'UAH', rate: 1 }];
     this.buildForm();
     this.setupAmountChanges();
     this.setupCurrencyChanges();
@@ -27,8 +27,8 @@ export class ConverterComponent implements OnChanges {
 
   buildForm(): void {
     this.converterForm = this.fb.group({
-      firstCurrency: this.convertData[0]?.cc,
-      secondCurrency: this.convertData[1]?.cc,
+      firstCurrency: this.currencies[0],
+      secondCurrency: this.currencies[1],
       firstAmount: null,
       secondAmount: null,
     });
@@ -80,19 +80,17 @@ export class ConverterComponent implements OnChanges {
   }
 
   convertFromFirstToSecond(amount: number): void {
-    const firstRate = this.getRate(this.firstCurrencyControl.value);
-    const secondRate = this.getRate(this.secondCurrencyControl.value);
+    const rate = this.getRate(this.firstCurrencyControl.value, this.secondCurrencyControl.value);
 
-    const convertedAmount = ConverterComponent.convertAmount(amount, firstRate, secondRate);
+    const convertedAmount = ConverterComponent.convertAmount(amount, rate);
 
     this.secondAmountControl.setValue(convertedAmount, { emitEvent: false });
   }
 
   convertFromSecondToFirst(amount: number): void {
-    const firstRate = this.getRate(this.firstCurrencyControl.value);
-    const secondRate = this.getRate(this.secondCurrencyControl.value);
+    const rate = this.getRate(this.secondCurrencyControl.value, this.firstCurrencyControl.value);
 
-    const convertedAmount = ConverterComponent.convertAmount(amount, secondRate, firstRate);
+    const convertedAmount = ConverterComponent.convertAmount(amount, rate);
 
     this.firstAmountControl.setValue(convertedAmount, { emitEvent: false });
   }
@@ -111,12 +109,12 @@ export class ConverterComponent implements OnChanges {
     this.recalculateAmounts();
   }
 
-  getRate(currency: string) {
-    return this.convertData.find(currencyData => currencyData.cc === currency)?.rate || 1;
+  getRate(baseCurrency: string, targetCurrency: string) {
+    return this.inputCurrencyData[baseCurrency][targetCurrency];
   }
 
-  static convertAmount(currentAmount: number, currentRate: number, otherRate: number) {
-    const convertedAmount = (currentAmount * currentRate) / otherRate;
+  static convertAmount(currentAmount: number, currentRate: number) {
+    const convertedAmount = currentAmount * currentRate;
     return Number(convertedAmount.toFixed(4));
   }
 }

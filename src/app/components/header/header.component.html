@@ -1,8 +1,8 @@
 <div class="header">
   <div class="header__currency-container">
-    <div class="header__currency-info" *ngFor="let item of currencyData">
-      <div class="header__currency-code">{{item.cc}}: </div>
-      <div class="header__currency-rate">{{item.rate}}</div>
+    <div class="header__currency-info" *ngFor="let item of uahData | keyvalue">
+      <div class="header__currency-code">{{item.key}}: </div>
+      <div class="header__currency-rate">{{item.value}}</div>
     </div>
   </div>
 </div>
