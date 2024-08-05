@@ -1,0 +1,16 @@
+<!-- <div *ngIf="type === 'select' ">
+  <ng-select [formControl]="control" class="converter__currency-select" [clearable]="false">
+    <ng-option class="converter__currency-option"
+      *ngFor="let item of currencies" [value]="item">{{ item }}</ng-option>
+  </ng-select>
+</div>
+<div *ngIf="type === 'input' ">
+  <input type="number" [formControl]="control" class="converter__currency-input" placeholder="Enter value...">
+</div> -->
+<div class="converter__currency-container" [formGroup]="currencyControl">
+  <ng-select formControlName="select" class="converter__currency-select" [clearable]="false">
+    <ng-option class="converter__currency-option"
+      *ngFor="let item of currencies" [value]="item">{{ item }}</ng-option>
+  </ng-select>
+  <input type="number" formControlName="input" class="converter__currency-input" placeholder="Enter value...">
+</div>

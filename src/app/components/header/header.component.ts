@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { ExchangeRate, ExchangeRates } from 'src/app/services/interface/exchangeRates.interface';
 import { currencies } from 'src/app/constants/constants.const';
 
@@ -8,7 +8,7 @@ import { currencies } from 'src/app/constants/constants.const';
   styleUrls: ['./header.component.scss']
 })
 export class HeaderComponent implements OnChanges {
-  @Input() currencyData!: ExchangeRates;
+  @Input() currencyData: ExchangeRates | null = null;
   uahData: ExchangeRate = {};
 
   ngOnChanges(): void {
@@ -19,7 +19,8 @@ export class HeaderComponent implements OnChanges {
     this.uahData = currencies.filter(value => value !== 'UAH')
       .reduce((a, v) => ({
         ...a,
-        [v]: this.currencyData[v]['UAH']
+        [v]: this.currencyData![v]['UAH']
       }), {});
   }
+
 }

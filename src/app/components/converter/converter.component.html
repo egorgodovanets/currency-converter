@@ -1,20 +1,23 @@
 <div class="converter">
   <form [formGroup]="converterForm" class="converter__form">
-    <div class="converter__currency-container">
+    <!-- <div class="converter__currency-container">
       <ng-select formControlName="firstCurrency" class="converter__currency-select" [clearable]="false">
         <ng-option class="converter__currency-option"
           *ngFor="let item of currencies" [value]="item">{{ item }}</ng-option>
       </ng-select>
       <input type="number" formControlName="firstAmount" class="converter__currency-input" placeholder="Enter value...">
-    </div>
+    </div> -->
 
-    <div class="converter__currency-container">
+    <app-currency-control formControlName="firstCurrencyControl"></app-currency-control>
+    <app-currency-control formControlName="secondCurrencyControl"></app-currency-control>
+
+    <!-- <div class="converter__currency-container">
       <ng-select formControlName="secondCurrency" class="converter__currency-select" [clearable]="false">
         <ng-option class="converter__currency-option"
           *ngFor="let item of currencies" [value]="item">{{ item }}</ng-option>
       </ng-select>
       <input type="number" formControlName="secondAmount" class="converter__currency-input" placeholder="Enter value...">
-    </div>
+    </div> -->
   </form>
 
   <div class="converter__swap-btn-container">

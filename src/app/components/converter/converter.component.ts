@@ -1,4 +1,6 @@
-import { Component, Input, OnChanges } from '@angular/core';
+import { CurrencyControlComponent } from './../currency-control/currency-control.component';
+import { Component, DestroyRef, inject, Input, OnChanges } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AbstractControl, FormBuilder, FormGroup } from '@angular/forms';
 import { ExchangeRates } from 'src/app/services/interface/exchangeRates.interface';
 import { currencies } from '../../constants/constants.const';
@@ -8,109 +10,83 @@ import { currencies } from '../../constants/constants.const';
   templateUrl: './converter.component.html',
   styleUrls: ['./converter.component.scss'],
 })
-export class ConverterComponent implements OnChanges {
-  @Input() inputCurrencyData!: ExchangeRates;
-  converterForm!: FormGroup;
-  firstCurrencyControl!: AbstractControl<string>;
-  secondCurrencyControl!: AbstractControl<string>;
-  firstAmountControl!: AbstractControl<number | null>;
-  secondAmountControl!: AbstractControl<number | null>;
+export class ConverterComponent {
+  @Input() inputCurrencyData: ExchangeRates | null = null;
+  private destroyRef = inject(DestroyRef);
+  converterForm: FormGroup;
+  firstCurrencyControl: AbstractControl<{ select: string; input: number | null }>;
+  secondCurrencyControl: AbstractControl<{ select: string; input: number | null }>;
   currencies: string[] = currencies;
 
-  constructor(private fb: FormBuilder) { }
-
-  ngOnChanges(): void {
-    this.buildForm();
-    this.setupAmountChanges();
-    this.setupCurrencyChanges();
-  }
-
-  buildForm(): void {
+  constructor(private fb: FormBuilder) {
     this.converterForm = this.fb.group({
-      firstCurrency: this.currencies[0],
-      secondCurrency: this.currencies[1],
-      firstAmount: null,
-      secondAmount: null,
+      firstCurrencyControl: [{ select: this.currencies[0], input: null }],
+      secondCurrencyControl: [{ select: this.currencies[1], input: null }],
     });
 
-    this.firstCurrencyControl = this.converterForm.get('firstCurrency')!;
-    this.secondCurrencyControl = this.converterForm.get('secondCurrency')!;
-    this.firstAmountControl = this.converterForm.get('firstAmount')!;
-    this.secondAmountControl = this.converterForm.get('secondAmount')!;
+    this.firstCurrencyControl = this.converterForm.get('firstCurrencyControl') as AbstractControl<{
+      select: string;
+      input: number | null;
+    }>;
+    this.secondCurrencyControl = this.converterForm.get(
+      'secondCurrencyControl'
+    ) as AbstractControl<{ select: string; input: number | null }>;
 
-    this.recalculateAmounts();
+    this.setupAmountChanges();
   }
 
   setupAmountChanges(): void {
-    this.firstAmountControl.valueChanges.subscribe(value => {
-      if (value !== null) {
-        this.convertFromFirstToSecond(value);
-      }
-    });
+    this.handleConvertChanges(this.firstCurrencyControl, this.secondCurrencyControl);
+    this.handleConvertChanges(this.secondCurrencyControl, this.firstCurrencyControl);
+  }
 
-    this.secondAmountControl.valueChanges.subscribe(value => {
-      if (value !== null) {
-        this.convertFromSecondToFirst(value);
-      }
+  handleConvertChanges(
+    control: AbstractControl<{ select: string; input: number | null }>,
+    changingCurrencyControl: AbstractControl<{ select: string; input: number | null }>
+  ): void {
+    control.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(value => {
+      this.convertCurrencies(value.select, value.input, changingCurrencyControl);
     });
   }
 
-  setupCurrencyChanges(): void {
-    this.firstCurrencyControl.valueChanges.subscribe(() => {
-      this.recalculateAmounts();
-    });
+  convertCurrencies(
+    currency: string,
+    amount: number | null,
+    changingCurrencyControl: AbstractControl<{ select: string; input: number | null }>): void {
+    if (amount === null) return;
 
-    this.secondCurrencyControl.valueChanges.subscribe(() => {
-      this.recalculateAmounts();
-    });
-  }
-
-  recalculateAmounts(): void {
-    const firstAmount = this.firstAmountControl.value;
-    const secondAmount = this.secondAmountControl.value;
-
-    if (firstAmount !== null) {
-      this.convertFromFirstToSecond(firstAmount);
-      return;
-    }
-
-    if (secondAmount !== null) {
-      this.convertFromSecondToFirst(secondAmount);
-    }
-  }
-
-  convertFromFirstToSecond(amount: number): void {
-    const rate = this.getRate(this.firstCurrencyControl.value, this.secondCurrencyControl.value);
+    const rate = this.getRate(currency, changingCurrencyControl.value.select);
 
     const convertedAmount = ConverterComponent.convertAmount(amount, rate);
 
-    this.secondAmountControl.setValue(convertedAmount, { emitEvent: false });
-  }
-
-  convertFromSecondToFirst(amount: number): void {
-    const rate = this.getRate(this.secondCurrencyControl.value, this.firstCurrencyControl.value);
-
-    const convertedAmount = ConverterComponent.convertAmount(amount, rate);
-
-    this.firstAmountControl.setValue(convertedAmount, { emitEvent: false });
+    changingCurrencyControl.setValue(
+      { select: changingCurrencyControl.value.select, input: convertedAmount },
+      { emitEvent: false }
+    );
   }
 
   swapCurrencies(): void {
-    const currentFirstCurrency = this.firstCurrencyControl.value;
-    const currentSecondCurrency = this.secondCurrencyControl.value;
+    const currentFirstCurrency = this.firstCurrencyControl.value.select;
+    const currentSecondCurrency = this.secondCurrencyControl.value.select;
+    const currentFirstAmount = this.firstCurrencyControl.value.input;
+    const currentSecondAmount = this.secondCurrencyControl.value.input;
 
-    this.firstCurrencyControl.setValue(currentSecondCurrency, {
-      emitEvent: false,
-    });
-    this.secondCurrencyControl.setValue(currentFirstCurrency, {
-      emitEvent: false,
-    });
+    this.firstCurrencyControl.setValue(
+      { select: currentSecondCurrency, input: currentFirstAmount },
+      { emitEvent: false });
+    this.secondCurrencyControl.setValue(
+      { select: currentFirstCurrency, input: currentSecondAmount },
+      { emitEvent: false });
 
-    this.recalculateAmounts();
+    this.convertCurrencies(
+      currentFirstCurrency,
+      currentFirstAmount,
+      this.secondCurrencyControl
+    );
   }
 
   getRate(baseCurrency: string, targetCurrency: string) {
-    return this.inputCurrencyData[baseCurrency][targetCurrency];
+    return this.inputCurrencyData![baseCurrency][targetCurrency];
   }
 
   static convertAmount(currentAmount: number, currentRate: number) {
