@@ -1,21 +1,23 @@
-import { CurrencyControlComponent } from './../currency-control/currency-control.component';
 import { Component, DestroyRef, inject, Input, OnChanges } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AbstractControl, FormBuilder, FormGroup } from '@angular/forms';
-import { ExchangeRates } from 'src/app/services/interface/exchangeRates.interface';
 import { currencies } from '../../constants/constants.const';
+import { CustomControl } from 'src/app/services/interface/customControl.interface';
+import { ExchangeRates } from 'src/app/services/interface/exchangeRates.interface';
 
 @Component({
   selector: 'app-converter',
   templateUrl: './converter.component.html',
   styleUrls: ['./converter.component.scss'],
 })
-export class ConverterComponent {
-  @Input() inputCurrencyData: ExchangeRates | null = null;
+export class ConverterComponent implements OnChanges {
+  @Input() exchangeRates: ExchangeRates | null = null;
+
   private destroyRef = inject(DestroyRef);
+  private firstCurrencyControl: AbstractControl<CustomControl>;
+  private secondCurrencyControl: AbstractControl<CustomControl>;
+
   converterForm: FormGroup;
-  firstCurrencyControl: AbstractControl<{ select: string; input: number | null }>;
-  secondCurrencyControl: AbstractControl<{ select: string; input: number | null }>;
   currencies: string[] = currencies;
 
   constructor(private fb: FormBuilder) {
@@ -30,29 +32,36 @@ export class ConverterComponent {
     }>;
     this.secondCurrencyControl = this.converterForm.get(
       'secondCurrencyControl'
-    ) as AbstractControl<{ select: string; input: number | null }>;
+    ) as AbstractControl<CustomControl>;
 
     this.setupAmountChanges();
   }
 
-  setupAmountChanges(): void {
+   ngOnChanges(): void {
+    this.convertCurrencies(
+      this.firstCurrencyControl.value.select,
+      this.firstCurrencyControl.value.input,
+      this.secondCurrencyControl)
+   }
+
+  private setupAmountChanges(): void {
     this.handleConvertChanges(this.firstCurrencyControl, this.secondCurrencyControl);
     this.handleConvertChanges(this.secondCurrencyControl, this.firstCurrencyControl);
   }
 
-  handleConvertChanges(
-    control: AbstractControl<{ select: string; input: number | null }>,
-    changingCurrencyControl: AbstractControl<{ select: string; input: number | null }>
+  private handleConvertChanges(
+    control: AbstractControl<CustomControl>,
+    changingCurrencyControl: AbstractControl<CustomControl>
   ): void {
     control.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(value => {
       this.convertCurrencies(value.select, value.input, changingCurrencyControl);
     });
   }
 
-  convertCurrencies(
+  private convertCurrencies(
     currency: string,
     amount: number | null,
-    changingCurrencyControl: AbstractControl<{ select: string; input: number | null }>): void {
+    changingCurrencyControl: AbstractControl<CustomControl>): void {
     if (amount === null) return;
 
     const rate = this.getRate(currency, changingCurrencyControl.value.select);
@@ -63,6 +72,19 @@ export class ConverterComponent {
       { select: changingCurrencyControl.value.select, input: convertedAmount },
       { emitEvent: false }
     );
+  }
+
+  private getRate(baseCurrency: string, targetCurrency: string) {
+    if (this.exchangeRates === null) {
+      return 0;
+    }
+
+    return this.exchangeRates[baseCurrency][targetCurrency];
+  }
+
+  private static convertAmount(currentAmount: number, currentRate: number) {
+    const convertedAmount = currentAmount * currentRate;
+    return Number(convertedAmount.toFixed(4));
   }
 
   swapCurrencies(): void {
@@ -79,18 +101,9 @@ export class ConverterComponent {
       { emitEvent: false });
 
     this.convertCurrencies(
-      currentFirstCurrency,
+      currentSecondCurrency,
       currentFirstAmount,
       this.secondCurrencyControl
     );
-  }
-
-  getRate(baseCurrency: string, targetCurrency: string) {
-    return this.inputCurrencyData![baseCurrency][targetCurrency];
-  }
-
-  static convertAmount(currentAmount: number, currentRate: number) {
-    const convertedAmount = currentAmount * currentRate;
-    return Number(convertedAmount.toFixed(4));
   }
 }

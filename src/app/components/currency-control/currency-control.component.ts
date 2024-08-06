@@ -1,4 +1,4 @@
-import { Component, DestroyRef, forwardRef, inject, Input } from '@angular/core';
+import { Component, DestroyRef, forwardRef, inject } from '@angular/core';
 import {
   ControlValueAccessor,
   FormBuilder,

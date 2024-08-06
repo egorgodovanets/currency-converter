@@ -12,33 +12,6 @@
     gap: 15px;
   }
 
-  &__currency-container {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  &__currency-select {
-    flex: 1;
-    border: 1px solid #e0e0e0;
-    border-radius: 4px;
-    font-size: 16px;
-    background-color: #f9f9f9;
-  }
-
-  &__currency-option {
-    font-size: 16px;
-  }
-
-  &__currency-input {
-    flex: 2;
-    padding: 10px;
-    border: 1px solid #e0e0e0;
-    border-radius: 4px;
-    font-size: 16px;
-    background-color: #ffffff;
-  }
-
   &__swap-btn-container {
     display: flex;
     margin-top: 15px;
