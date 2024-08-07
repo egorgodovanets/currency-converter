@@ -24,7 +24,6 @@ import { currencies } from 'src/app/constants/constants.const';
 export class CurrencyControlComponent implements ControlValueAccessor {
   private destroyRef = inject(DestroyRef);
   currencyControl: FormGroup;
-  control = new FormControl();
   currencies: string[] = currencies;
 
   constructor(private fb: FormBuilder) {
