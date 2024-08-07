@@ -34,20 +34,11 @@ export class CurrencyService {
       );
     });
 
-
     forkJoin(observables)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: results => {
-          const exchangeRates = results.reduce((accumulator, current) => {
-            if (current) {
-              return {
-                ...accumulator,
-                [current.base_code]: this.filterCurrencies(current.conversion_rates),
-              };
-            }
-            return accumulator;
-          }, {});
+          const exchangeRates = this.toExchangeRates(results);
           observer.next(exchangeRates);
         },
         error: err => {
@@ -55,6 +46,18 @@ export class CurrencyService {
           observer.error(err);
         }
       });
+  }
+
+  private toExchangeRates(apiResponses: (ApiExchangeResponse | null)[]) {
+    return apiResponses.reduce((accumulator, current) => {
+      if (current) {
+        return {
+          ...accumulator,
+          [current.base_code]: this.filterCurrencies(current.conversion_rates),
+        };
+      }
+      return accumulator;
+    }, {});
   }
 
   private filterCurrencies(rates: ExchangeRate): ExchangeRate {

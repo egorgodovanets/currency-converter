@@ -37,12 +37,13 @@ export class ConverterComponent implements OnChanges {
     this.setupAmountChanges();
   }
 
-   ngOnChanges(): void {
+  ngOnChanges(): void {
     this.convertCurrencies(
       this.firstCurrencyControl.value.select,
       this.firstCurrencyControl.value.input,
-      this.secondCurrencyControl)
-   }
+      this.secondCurrencyControl
+    );
+  }
 
   private setupAmountChanges(): void {
     this.handleConvertChanges(this.firstCurrencyControl, this.secondCurrencyControl);
@@ -61,7 +62,8 @@ export class ConverterComponent implements OnChanges {
   private convertCurrencies(
     currency: string,
     amount: number | null,
-    changingCurrencyControl: AbstractControl<CustomControl>): void {
+    changingCurrencyControl: AbstractControl<CustomControl>
+  ): void {
     if (amount === null) return;
 
     const rate = this.getRate(currency, changingCurrencyControl.value.select);
@@ -95,15 +97,13 @@ export class ConverterComponent implements OnChanges {
 
     this.firstCurrencyControl.setValue(
       { select: currentSecondCurrency, input: currentFirstAmount },
-      { emitEvent: false });
+      { emitEvent: false }
+    );
     this.secondCurrencyControl.setValue(
       { select: currentFirstCurrency, input: currentSecondAmount },
-      { emitEvent: false });
-
-    this.convertCurrencies(
-      currentSecondCurrency,
-      currentFirstAmount,
-      this.secondCurrencyControl
+      { emitEvent: false }
     );
+
+    this.convertCurrencies(currentSecondCurrency, currentFirstAmount, this.secondCurrencyControl);
   }
 }

@@ -22,9 +22,9 @@ export class HeaderComponent implements OnChanges {
     if (this.exchangeRates === null) return;
 
     this.uahData = currencies.filter(value => value !== 'UAH')
-      .reduce((a, v) => ({
-        ...a,
-        [v]: this.exchangeRates![v]['UAH']
+      .reduce((accumulator, current) => ({
+        ...accumulator,
+        [current]: this.exchangeRates![current]['UAH']
       }), {});
   }
 }
